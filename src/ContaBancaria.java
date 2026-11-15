@@ -8,6 +8,9 @@ public class ContaBancaria {
     private List<Transacao> extrato;
 
     public ContaBancaria(Usuario titular, BigDecimal saldoInicial) {
+        if (saldoInicial != null && saldoInicial.compareTo(BigDecimal.ZERO) < 0){
+            throw new IllegalArgumentException("Saldo inicial não pode ser negativo.");
+        }
         this.titular = titular;
         this.saldo = saldoInicial != null ? saldoInicial : BigDecimal.ZERO;
         this.extrato = new ArrayList<>();

@@ -4,9 +4,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.time.format.DateTimeParseException;
 
 void main(){
         Scanner scanner = new Scanner(System.in);
+        Usuario cliente = new Usuario();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         System.out.println("=========================================");
@@ -14,51 +16,84 @@ void main(){
         System.out.println("=========================================");
         System.out.println("Vamos abrir a sua conta cliente.");
 
-        Usuario cliente = null;
-
-        while (cliente == null) {
-            try {
-                System.out.print("\nDigite seu Nome: ");
-                String nome = scanner.nextLine();
-
-                System.out.print("Digite seu CPF (000.000.000-00): ");
-                String cpf = scanner.nextLine();
-
-                System.out.print("Data de Nascimento (DD/MM/AAAA): ");
-                String dataStr = scanner.nextLine();
-                LocalDate dataNascimento = LocalDate.parse(dataStr, formatter);
-
-                System.out.print("Crie uma Senha (mín. 6 caracteres): ");
-                String senha = scanner.nextLine();
-
-                cliente = new Usuario(nome, cpf, dataNascimento, senha);
-                System.out.println("✅ Usuário criado com sucesso!");
-            } catch (Exception e) {
-                System.out.println("❌ Erro: " + e.getMessage());
-                System.out.println("Por favor, tente novamente.");
-            }
+    while (true) {
+        try {
+            System.out.print("\nDigite seu Nome: ");
+            cliente.setNome(scanner.nextLine());
+            break; // Só chega aqui se não der erro, avançando para o CPF
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erro: " + e.getMessage());
         }
+    }
+    while (true) {
+        try {
+            System.out.print("Digite seu CPF (000.000.000-00): ");
+            cliente.setCpf(scanner.nextLine());
+            break;
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erro: " + e.getMessage());
+        }
+    }
+    while (true) {
+        try {
+            System.out.print("Data de Nascimento (DD/MM/AAAA): ");
+            String dataStr = scanner.nextLine();
+
+            LocalDate dataNascimento = null;
+            if (!dataStr.isBlank()) {
+                try {
+                    dataNascimento = LocalDate.parse(dataStr.trim(), formatter);
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException("Formato de data inválido. Use DD/MM/AAAA.");
+                }
+            }
+
+            cliente.setDataNascimento(dataNascimento);
+            break;
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erro: " + e.getMessage());
+        }
+    }
+
+    while (true) {
+        try {
+            System.out.print("Crie uma Senha (mín. 6 caracteres): ");
+            cliente.setSenha(scanner.nextLine());
+            break;
+        } catch (IllegalArgumentException e) {
+            System.out.println("❌ Erro: " + e.getMessage());
+        }
+    }
+    System.out.println("✅ Usuário criado com sucesso!");
 
         ContaBancaria conta = null;
         while (conta == null) {
             try {
                 System.out.print("\nQual será o saldo inicial da sua conta? R$ ");
                 String saldoStr = scanner.nextLine().replace(",", ".");
+                System.out.print("\nDigite sua senha: ");
+                String senha = scanner.nextLine();
+                if(senha.equals(cliente.getSenha())){
                 conta = new ContaBancaria(cliente, new BigDecimal(saldoStr));
-                System.out.println("✅ Conta bancária criada!");
-            } catch (Exception e) {
+                System.out.println("✅ Conta bancária criada!");}
+                else{
+                    System.out.println("Senha incorreta tente de novo");
+                }
+            } catch (NumberFormatException e) {
                 System.out.println("❌ Erro: Digite um valor válido.");
+            }
+            catch (IllegalArgumentException e){
+                System.out.println("❌ Erro: " + e.getMessage());
             }
         }
 
-        // 3. CRIANDO GERENTES PARA TESTAR AS APROVAÇÕES
+        // GERENTES PARA TESTAR AS APROVAÇÕES
         Usuario gerente1 = new Usuario("Gerente Ana", "111.222.333-44", LocalDate.of(1985, 5, 10), "senha123");
         Usuario gerente2 = new Usuario("Gerente Carlos", "555.666.777-88", LocalDate.of(1980, 8, 20), "senha123");
-        Usuario gerenteBloqueado = new Usuario("Gerente Pedro (BLOQUEADO)", "999.888.777-66", LocalDate.of(1992, 2, 2), "senha123");
+        Usuario gerenteBloqueado = new Usuario("Gerente Pedro BLOQUEADO", "999.888.777-66", LocalDate.of(1992, 2, 2), "senha123");
         gerenteBloqueado.setBloqueado(true);
 
         List<Transacao> transacoesPendentes = new ArrayList<>();
-
 
         int opcao = 0;
         while (opcao != 5) {

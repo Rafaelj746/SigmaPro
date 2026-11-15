@@ -14,6 +14,9 @@ public class Usuario {
         setSenha(senha);
         this.bloqueado = false;
     }
+    public Usuario(){
+        this.bloqueado = false;
+    }
     public boolean isBloqueado(){return bloqueado;}
     public void setBloqueado(boolean bloqueado)
     {this.bloqueado = bloqueado;}
@@ -29,6 +32,12 @@ public class Usuario {
             );
         }
         this.nome = nome.trim();
+        if (!nome.matches("^[a-zA-ZÀ-ÿ ]+$")) {
+            throw new IllegalArgumentException(
+                    "Nome inválido. Utilize apenas letras"
+            );
+        }
+        this.nome = nome;
     }
 
     public String getCpf() {
@@ -45,7 +54,7 @@ public class Usuario {
         String regexFormatacao = "^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$";
         if(!cpfFormatado.matches(regexFormatacao)) {
             throw new IllegalArgumentException(
-                    "CPF inválido. Formato esperado: 000.000.000-00"
+                    "CPF inválido. Digite somente números. e no formato esperado: 000.000.000-00"
             );
         }
         this.cpf = cpfFormatado;
