@@ -66,6 +66,20 @@ public class ContaBancaria {
         }
         System.out.println("SALDO ATUAL: R$ " + this.saldo);
         System.out.println("=========================================\n");
+        if(extrato.isEmpty()){
+            System.out.println("Nenhuma transação realizadeo.");
+        }
+        else{
+            for (Transacao t : extrato) {
+                String infoDestino="";
+                if(t.getDestino()!=null){
+                    infoDestino=" para "+ t.getDestino().getTitular().getNome();
+                }
+                System.out.println("["+ t.getStatus() + infoDestino + "- R$ " + t.getValor());
+            }
+        }
+        System.out.println("Saldo atual: R$ " + this.saldo);
+        System.out.println("========================================\n");
     }
 
     public Usuario getTitular() { return titular; }

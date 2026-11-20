@@ -93,4 +93,5 @@ public class Transacao {
         public String getTipo() { return tipo; }
         public BigDecimal getValor() { return valor; }
         public List<RegistroDecisao> getHistorico() { return historico; }
+        public ContaBancaria getDestino() { return destino; }
     }

@@ -20,7 +20,7 @@ void main(){
         try {
             System.out.print("\nDigite seu Nome: ");
             cliente.setNome(scanner.nextLine());
-            break; // Só chega aqui se não der erro, avançando para o CPF
+            break;
         } catch (IllegalArgumentException e) {
             System.out.println("❌ Erro: " + e.getMessage());
         }
@@ -95,113 +95,132 @@ void main(){
 
         List<Transacao> transacoesPendentes = new ArrayList<>();
 
-        int opcao = 0;
-        while (opcao != 5) {
-            System.out.println("\n=========================================");
-            System.out.println("Olá, " + cliente.getNome() + " | Saldo: R$ " + conta.getSaldo());
-            System.out.println("1. Depositar (Aprovação Automática)");
-            System.out.println("2. Solicitar Saque (Vai para Análise)");
-            System.out.println("3. Ver Extrato da Conta");
-            System.out.println("4. Painel de Gerência (Aprovar/Rejeitar Transações)");
-            System.out.println("5. Sair");
-            System.out.print("Escolha uma opção: ");
+    // 4. MENU INTERATIVO
+    int opcao = 0;
+    while (opcao != 6) {
+        System.out.println("\n=========================================");
+        System.out.println("Olá, " + cliente.getNome() + " | Saldo: R$ " + conta.getSaldo());
+        System.out.println("1. Depositar (Aprovação Automática)");
+        System.out.println("2. Solicitar Saque (Vai para Análise)");
+        System.out.println("3. Solicitar Transferência (Vai para Análise)");
+        System.out.println("4. Ver Extrato da Conta");
+        System.out.println("5. Painel de Gerência (Aprovar/Rejeitar Transações)");
+        System.out.println("6. Sair");
+        System.out.print("Escolha uma opção: ");
 
-            try {
-                opcao = Integer.parseInt(scanner.nextLine());
+        try {
+            opcao = Integer.parseInt(scanner.nextLine());
 
-                switch (opcao) {
-                    case 1:
-                        System.out.print("Qual valor deseja depositar? R$ ");
-                        BigDecimal valorDep = new BigDecimal(scanner.nextLine().replace(",", "."));
-                        conta.depositar(valorDep);
-                        System.out.println("✅ Depósito efetivado na hora!");
+            switch (opcao) {
+                case 1:
+                    System.out.print("Qual valor deseja depositar? R$ ");
+                    BigDecimal valorDep = new BigDecimal(scanner.nextLine().replace(",", "."));
+                    conta.depositar(valorDep);
+                    System.out.println("✅ Depósito efetivado na hora!");
+                    break;
+
+                case 2:
+                    System.out.print("Qual valor deseja sacar? R$ ");
+                    BigDecimal valorSaq = new BigDecimal(scanner.nextLine().replace(",", "."));
+                    Transacao t = conta.solicitarSaque(valorSaq);
+                    transacoesPendentes.add(t);
+                    System.out.println("⏳ Saque solicitado! Foi enviado para o painel de aprovação.");
+                    break;
+
+                case 3:
+                    System.out.print("Nome de quem vai receber a transferência: ");
+                    String nomeDestino = scanner.nextLine();
+
+                    // Cria a conta de destino validando o nome na classe Usuario
+                    Usuario usuarioDestino = new Usuario(nomeDestino, "000.000.000-00", LocalDate.of(1990, 1, 1), "123456");
+                    ContaBancaria contaDestino = new ContaBancaria(usuarioDestino, BigDecimal.ZERO);
+
+                    System.out.print("Qual valor deseja transferir? R$ ");
+                    BigDecimal valorTransf = new BigDecimal(scanner.nextLine().replace(",", "."));
+
+                    Transacao transf = conta.solicitarTransferencia(contaDestino, valorTransf);
+                    transacoesPendentes.add(transf);
+                    System.out.println("⏳ Transferência para " + usuarioDestino.getNome() + " solicitada! Enviada para análise.");
+                    break;
+
+                case 4:
+                    conta.imprimirExtrato();
+                    break;
+
+                case 5:
+                    // PAINEL DE APROVAÇÃO
+                    if (transacoesPendentes.isEmpty()) {
+                        System.out.println("✅ Nenhuma transação pendente no momento.");
                         break;
+                    }
 
-                    case 2:
-                        System.out.print("Qual valor deseja sacar? R$ ");
-                        BigDecimal valorSaq = new BigDecimal(scanner.nextLine().replace(",", "."));
-                        Transacao t = conta.solicitarSaque(valorSaq);
-                        transacoesPendentes.add(t);
-                        System.out.println("⏳ Saque solicitado! Foi enviado para o painel de aprovação.");
-                        break;
+                    System.out.println("\n--- TRANSAÇÕES AGUARDANDO ANÁLISE ---");
+                    for (int i = 0; i < transacoesPendentes.size(); i++) {
+                        Transacao pendente = transacoesPendentes.get(i);
+                        String destinoStr = (pendente.getDestino() != null) ? " para " + pendente.getDestino().getTitular().getNome() : "";
+                        System.out.println(i + " -> " + pendente.getTipo() + destinoStr + " de R$ " + pendente.getValor() + " | Status: " + pendente.getStatus());
+                    }
 
-                    case 3:
-                        conta.imprimirExtrato();
-                        break;
+                    System.out.print("Digite o número da transação para analisar: ");
+                    int indice = Integer.parseInt(scanner.nextLine());
+                    Transacao selecionada = transacoesPendentes.get(indice);
 
-                    case 4:
-                        // PAINEL DE APROVAÇÃO
-                        if (transacoesPendentes.isEmpty()) {
-                            System.out.println("✅ Nenhuma transação pendente no momento.");
-                            break;
-                        }
+                    System.out.println("\nQuem está analisando?");
+                    System.out.println("1. " + gerente1.getNome());
+                    System.out.println("2. " + gerente2.getNome());
+                    System.out.println("3. " + gerenteBloqueado.getNome());
+                    System.out.print("Escolha o gerente: ");
+                    int opGerente = Integer.parseInt(scanner.nextLine());
 
-                        System.out.println("\n--- TRANSAÇÕES AGUARDANDO ANÁLISE ---");
-                        for (int i = 0; i < transacoesPendentes.size(); i++) {
-                            Transacao pendente = transacoesPendentes.get(i);
-                            System.out.println(i + " -> " + pendente.getTipo() + " de R$ " + pendente.getValor() + " | Status: " + pendente.getStatus());
-                        }
+                    Usuario avaliador = (opGerente == 1) ? gerente1 : (opGerente == 2) ? gerente2 : gerenteBloqueado;
 
-                        System.out.print("Digite o número da transação para analisar: ");
-                        int indice = Integer.parseInt(scanner.nextLine());
-                        Transacao selecionada = transacoesPendentes.get(indice);
+                    System.out.println("\nO que deseja fazer?");
+                    System.out.println("1. Aprovar");
+                    System.out.println("2. Rejeitar");
+                    System.out.println("3. Solicitar Nova Análise (Para transações já rejeitadas)");
+                    System.out.print("Ação: ");
+                    int acao = Integer.parseInt(scanner.nextLine());
 
-                        System.out.println("\nQuem está analisando?");
-                        System.out.println("1. " + gerente1.getNome());
-                        System.out.println("2. " + gerente2.getNome());
-                        System.out.println("3. " + gerenteBloqueado.getNome());
-                        System.out.print("Escolha o gerente: ");
-                        int opGerente = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Digite uma justificativa para a decisão: ");
+                    String justificativa = scanner.nextLine();
 
-                        Usuario avaliador = (opGerente == 1) ? gerente1 : (opGerente == 2) ? gerente2 : gerenteBloqueado;
-
-                        System.out.println("\nO que deseja fazer?");
-                        System.out.println("1. Aprovar");
-                        System.out.println("2. Rejeitar");
-                        System.out.println("3. Solicitar Nova Análise (Para transações já rejeitadas)");
-                        System.out.print("Ação: ");
-                        int acao = Integer.parseInt(scanner.nextLine());
-
-                        System.out.print("Digite uma justificativa para a decisão: ");
-                        String justificativa = scanner.nextLine();
-
-                        try {
-                            if (acao == 1) {
-                                selecionada.aprovar(avaliador, justificativa);
-                                System.out.println("✅ Decisão de aprovação registrada.");
-                                if (selecionada.getStatus() == StatusTransacao.EFETIVADA) {
-                                    System.out.println("🎉 APROVAÇÕES SUFICIENTES! O saldo foi atualizado.");
-                                    transacoesPendentes.remove(selecionada); // Tira da fila
-                                } else {
-                                    System.out.println("⚠️ Ainda falta aprovação de outro gerente.");
-                                }
-                            } else if (acao == 2) {
-                                selecionada.rejeitar(avaliador, justificativa);
-                                System.out.println("❌ Transação Rejeitada.");
-                            } else if (acao == 3) {
-                                selecionada.solicitarNovaAnalise(justificativa);
-                                System.out.println("🔄 Transação retornou para Pendente (Histórico mantido).");
+                    try {
+                        if (acao == 1) {
+                            selecionada.aprovar(avaliador, justificativa);
+                            System.out.println("✅ Decisão de aprovação registrada.");
+                            if (selecionada.getStatus() == StatusTransacao.EFETIVADA) {
+                                System.out.println("APROVAÇÕES SUFICIENTES! O saldo foi atualizado.");
+                                transacoesPendentes.remove(selecionada);
+                            } else {
+                                System.out.println("⚠️ Ainda falta aprovação de outro gerente.");
                             }
-                        } catch (Exception e) {
-                            System.out.println("⚠️ ALERTA DA REGRA DE NEGÓCIO: " + e.getMessage());
+                        } else if (acao == 2) {
+                            selecionada.rejeitar(avaliador, justificativa);
+                            System.out.println("❌ Transação Rejeitada.");
+                        } else if (acao == 3) {
+                            selecionada.solicitarNovaAnalise(justificativa);
+                            System.out.println("🔄 Transação retornou para Pendente (Histórico mantido).");
                         }
-                        break;
+                    } catch (Exception e) {
+                        System.out.println("⚠️ ALERTA DA REGRA DE NEGÓCIO: " + e.getMessage());
+                    }
+                    break;
 
-                    case 5:
-                        System.out.println("Saindo do AprovaPay Mini. Até logo!");
-                        break;
+                case 6:
+                    System.out.println("Saindo do AprovaPay Mini. Até logo!");
+                    break;
 
-                    default:
-                        System.out.println("❌ Opção inválida.");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Erro: Digite apenas números nas opções ou valores.");
-            } catch (IndexOutOfBoundsException e) {
-                System.out.println("❌ Erro: Transação não encontrada.");
-            } catch (Exception e) {
-                System.out.println("❌ Erro na operação: " + e.getMessage());
+                default:
+                    System.out.println("❌ Opção inválida.");
             }
+
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Erro: Digite apenas números nas opções ou valores.");
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("❌ Erro: Transação não encontrada.");
+        } catch (Exception e) {
+            System.out.println("❌ Erro na operação: " + e.getMessage());
         }
+    }
         scanner.close();
     }
