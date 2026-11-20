@@ -92,6 +92,7 @@ public class Transacao {
         public StatusTransacao getStatus() { return status; }
         public String getTipo() { return tipo; }
         public BigDecimal getValor() { return valor; }
+        public LocalDateTime getDataCriacao(){ return dataCriacao; }
         public List<RegistroDecisao> getHistorico() { return historico; }
         public ContaBancaria getDestino() { return destino; }
     }

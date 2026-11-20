@@ -1,4 +1,5 @@
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,26 +61,36 @@ public class ContaBancaria {
     }
 
     public void imprimirExtrato() {
-        System.out.println("\n=== EXTRATO DA CONTA: " + titular.getNome() + " ===");
-        for (Transacao t : extrato) {
-            System.out.println("[" + t.getStatus() + "] " + t.getTipo() + " - R$ " + t.getValor());
-        }
-        System.out.println("SALDO ATUAL: R$ " + this.saldo);
-        System.out.println("=========================================\n");
-        if(extrato.isEmpty()){
-            System.out.println("Nenhuma transação realizadeo.");
-        }
-        else{
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        System.out.println("\n==============================================================");
+        System.out.println("EXTRATO DETALHADO - Titular: " + titular.getNome() + " (CPF: " + titular.getCpf() + ")");
+        System.out.println("==============================================================");
+
+        if (extrato.isEmpty()) {
+            System.out.println("Nenhuma transação realizada.");
+        } else {
             for (Transacao t : extrato) {
-                String infoDestino="";
-                if(t.getDestino()!=null){
-                    infoDestino=" para "+ t.getDestino().getTitular().getNome();
+                String dataStr = (t.getDataCriacao() != null) ? t.getDataCriacao().format(fmt) : "Data N/D";
+                System.out.println("\n• [" + t.getStatus() + "] " + t.getTipo() + " | Valor: R$ " + t.getValor() + " | Solicitada em: " + dataStr);
+
+                if (t.getDestino() != null) {
+                    Usuario dest = t.getDestino().getTitular();
+                    System.out.println("  Destinatário: " + dest.getNome() + " (CPF: " + dest.getCpf() + ")");
                 }
-                System.out.println("["+ t.getStatus() + infoDestino + "- R$ " + t.getValor());
+
+                System.out.println("  Fluxo de Decisões:");
+                if (t.getHistorico() == null || t.getHistorico().isEmpty()) {
+                    System.out.println("    - Aguardando análise.");
+                } else {
+                    for (RegistroDecisao registro : t.getHistorico()) {
+                        System.out.println("    - " + registro.toString());
+                    }
+                }
+                System.out.println("--------------------------------------------------------------");
             }
         }
-        System.out.println("Saldo atual: R$ " + this.saldo);
-        System.out.println("========================================\n");
+        System.out.println("SALDO ATUAL: R$ " + this.saldo);
+        System.out.println("==============================================================\n");
     }
 
     public Usuario getTitular() { return titular; }

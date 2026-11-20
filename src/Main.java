@@ -123,15 +123,30 @@ void main(){
                     System.out.print("Qual valor deseja sacar? R$ ");
                     BigDecimal valorSaq = new BigDecimal(scanner.nextLine().replace(",", "."));
                     Transacao t = conta.solicitarSaque(valorSaq);
-                    transacoesPendentes.add(t);
-                    System.out.println("⏳ Saque solicitado! Foi enviado para o painel de aprovação.");
+
+                    // Verifica se é até R$ 10.000,00 inclusive
+                    if (valorSaq.compareTo(new BigDecimal("10000.00")) <= 0) {
+                        System.out.print("Confirma o SAQUE no valor de R$ " + valorSaq + "? (S/N): ");
+                        String confirmacao = scanner.nextLine().trim();
+
+                        if (confirmacao.equalsIgnoreCase("S") || confirmacao.equalsIgnoreCase("SIM")) {
+                            t.aprovar(cliente, "Confirmado pelo próprio usuário");
+                            System.out.println("✅ Saque confirmado e efetivado!");
+                        } else {
+                            t.rejeitar(cliente, "Cancelado pelo usuário na confirmação");
+                            System.out.println("❌ Saque cancelado.");
+                        }
+                    } else {
+                        transacoesPendentes.add(t);
+                        System.out.println("⏳ Valor acima de R$ 10.000,00. Saque enviado para o painel de aprovação da gerência!");
+                    }
                     break;
 
                 case 3:
                     System.out.print("Nome de quem vai receber a transferência: ");
                     String nomeDestino = scanner.nextLine();
 
-                    // Cria a conta de destino validando o nome na classe Usuario
+                    // Valida o nome na classe Usuario antes de pedir o valor
                     Usuario usuarioDestino = new Usuario(nomeDestino, "000.000.000-00", LocalDate.of(1990, 1, 1), "123456");
                     ContaBancaria contaDestino = new ContaBancaria(usuarioDestino, BigDecimal.ZERO);
 
@@ -139,8 +154,23 @@ void main(){
                     BigDecimal valorTransf = new BigDecimal(scanner.nextLine().replace(",", "."));
 
                     Transacao transf = conta.solicitarTransferencia(contaDestino, valorTransf);
-                    transacoesPendentes.add(transf);
-                    System.out.println("⏳ Transferência para " + usuarioDestino.getNome() + " solicitada! Enviada para análise.");
+
+                    // Verifica se é até R$ 10.000,00 inclusive
+                    if (valorTransf.compareTo(new BigDecimal("10000.00")) <= 0) {
+                        System.out.print("Confirma a TRANSFERÊNCIA de R$ " + valorTransf + " para " + usuarioDestino.getNome() + "? (S/N): ");
+                        String confirmacao = scanner.nextLine().trim();
+
+                        if (confirmacao.equalsIgnoreCase("S") || confirmacao.equalsIgnoreCase("SIM")) {
+                            transf.aprovar(cliente, "Confirmado pelo próprio usuário");
+                            System.out.println("✅ Transferência para " + usuarioDestino.getNome() + " confirmada e efetivada!");
+                        } else {
+                            transf.rejeitar(cliente, "Cancelado pelo usuário na confirmação");
+                            System.out.println("❌ Transferência cancelada.");
+                        }
+                    } else {
+                        transacoesPendentes.add(transf);
+                        System.out.println("⏳ Valor acima de R$ 10.000,00. Transferência enviada para análise da gerência!");
+                    }
                     break;
 
                 case 4:
