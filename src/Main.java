@@ -143,11 +143,30 @@ void main(){
                     break;
 
                 case 3:
-                    System.out.print("Nome de quem vai receber a transferência: ");
-                    String nomeDestino = scanner.nextLine();
+                    Usuario usuarioDestino = new Usuario();
 
-                    // Valida o nome na classe Usuario antes de pedir o valor
-                    Usuario usuarioDestino = new Usuario(nomeDestino, "000.000.000-00", LocalDate.of(1990, 1, 1), "123456");
+                    // 1. Lê e valida o Nome do destinatário
+                    while (true) {
+                        try {
+                            System.out.print("Nome de quem vai receber a transferência: ");
+                            usuarioDestino.setNome(scanner.nextLine());
+                            break;
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("❌ Erro: " + e.getMessage());
+                        }
+                    }
+
+                    // 2. Lê e valida o CPF do destinatário
+                    while (true) {
+                        try {
+                            System.out.print("CPF do destinatário (000.000.000-00): ");
+                            usuarioDestino.setCpf(scanner.nextLine());
+                            break;
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("❌ Erro: " + e.getMessage());
+                        }
+                    }
+
                     ContaBancaria contaDestino = new ContaBancaria(usuarioDestino, BigDecimal.ZERO);
 
                     System.out.print("Qual valor deseja transferir? R$ ");
@@ -157,7 +176,7 @@ void main(){
 
                     // Verifica se é até R$ 10.000,00 inclusive
                     if (valorTransf.compareTo(new BigDecimal("10000.00")) <= 0) {
-                        System.out.print("Confirma a TRANSFERÊNCIA de R$ " + valorTransf + " para " + usuarioDestino.getNome() + "? (S/N): ");
+                        System.out.print("Confirma a TRANSFERÊNCIA de R$ " + valorTransf + " para " + usuarioDestino.getNome() + " (CPF: " + usuarioDestino.getCpf() + ")? (S/N): ");
                         String confirmacao = scanner.nextLine().trim();
 
                         if (confirmacao.equalsIgnoreCase("S") || confirmacao.equalsIgnoreCase("SIM")) {
