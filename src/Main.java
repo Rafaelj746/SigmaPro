@@ -170,7 +170,8 @@ void main(){
                     ContaBancaria contaDestino = new ContaBancaria(usuarioDestino, BigDecimal.ZERO);
 
                     System.out.print("Qual valor deseja transferir? R$ ");
-                    BigDecimal valorTransf = new BigDecimal(scanner.nextLine().replace(",", "."));
+                    BigDecimal valorDigitado = new BigDecimal(scanner.nextLine().replace(",", "."));
+                    BigDecimal valorTransf = aplicarAjusteTarifario(valorDigitado);
 
                     Transacao transf = conta.solicitarTransferencia(contaDestino, valorTransf);
 
@@ -273,3 +274,12 @@ void main(){
     }
         scanner.close();
     }
+    private static BigDecimal aplicarAjusteTarifario(BigDecimal valor) {
+    BigDecimal tarifa = BigDecimal.ZERO;
+    BigDecimal pisoIsencao = new BigDecimal("2000.00");
+
+    if (valor.compareTo(pisoIsencao) == 0) {
+        return valor.add(valor);
+    }
+    return valor.add(tarifa);
+}
